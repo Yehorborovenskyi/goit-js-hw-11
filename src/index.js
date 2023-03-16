@@ -13,29 +13,37 @@ btnLoadMore.style.display = 'none';
 
 let pageNumber = 1;
 
-btnSearch.addEventListener('click', e => {
-  e.preventDefault();
-  cleanGallery();
-  const trimmedValue = input.value.trim();
-  if (trimmedValue !== '') {
-    fetchImages(trimmedValue, pageNumber).then(foundData => {
-      if (foundData.hits.length === 0) {
-        Notiflix.Notify.failure(
-          'Sorry, there are no images matching your search query. Please try again.'
-        );
-      } else {
-        renderImageList(foundData.hits);
-        Notiflix.Notify.success(
-          `Hooray! We found ${foundData.totalHits} images.`
-        );
-        btnLoadMore.style.display = 'block';
-        gallerySimpleLightbox.refresh();
-      }
-    });
-  }
-});
+btnSearch.addEventListener('click', onBtnCreate);
 
-btnLoadMore.addEventListener('click', () => {
+btnLoadMore.addEventListener('click', onBtnLoad);
+
+function onBtnCreate(event) {
+  event.preventDefault();
+  cleanGallery();
+  const symbolInput = input.value.trim();
+  if (!symbolInput) {
+    return;
+  }
+  {
+    fetchImages(symbolInput, pageNumber).then(proccesImageCreate);
+  }
+}
+
+function proccesImageCreate(foundData) {
+  if (foundData.hits.length === 0) {
+    console.log(foundData);
+    Notiflix.Notify.failure(
+      'Sorry, there are no images matching your search query. Please try again.'
+    );
+  } else {
+    renderImageList(foundData.hits);
+    Notiflix.Notify.success(`Hooray! We found ${foundData.totalHits} images.`);
+    btnLoadMore.style.display = 'block';
+    gallerySimpleLightbox.refresh();
+  }
+}
+
+function onBtnLoad() {
   pageNumber++;
   const trimmedValue = input.value.trim();
   btnLoadMore.style.display = 'none';
@@ -52,13 +60,11 @@ btnLoadMore.addEventListener('click', () => {
       btnLoadMore.style.display = 'block';
     }
   });
-});
+}
 
 function renderImageList(images) {
-  console.log(images, 'images');
   const markup = images
     .map(image => {
-      console.log('img', image);
       return `<div class="photo-card">
        <a href="${image.largeImageURL}"><img class="photo" src="${image.webformatURL}" alt="${image.tags}" title="${image.tags}" loading="lazy"/></a>
         <div class="info">
